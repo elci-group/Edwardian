@@ -94,6 +94,8 @@ enum Command {
         #[arg(long)]
         once: bool,
     },
+    /// Advisory Microsoft Store compliance checks (never affects readiness).
+    Store,
     /// Produce a release: a standalone Windows fork or a compatible dev branch.
     Release {
         #[command(subcommand)]
@@ -133,18 +135,25 @@ fn run() -> Result<(), String> {
         .map_err(|e| format!("cannot access path {}: {}", cli.path.display(), e))?;
     let report = edwardian_engine::run(&root, &config)
         .map_err(|e| format!("pipeline failed: {}", e))?;
+    let store_report = match &cli.command {
+        Command::Store | Command::Analyse | Command::Readiness | Command::Export => {
+            Some(edwardian_store::run(&root, &report).map_err(|e| format!("store checks failed: {}", e))?)
+        }
+        _ => None,
+    };
 
     let json = cli.format == FormatArg::Json;
     let out = match &cli.command {
         Command::Inspect => cmd_inspect(&report, json),
-        Command::Analyse => cmd_analyse(&report, json, &cli.out),
+        Command::Store => cmd_store(store_report.as_ref().expect("store report"), json),
+        Command::Analyse => cmd_analyse(&report, store_report.as_ref(), json, &cli.out),
         Command::Explain { finding_id } => cmd_explain(&report, finding_id, json),
         Command::Alternatives => cmd_alternatives(&report, json),
-        Command::Readiness => cmd_readiness(&report, json, &cli.out),
+        Command::Readiness => cmd_readiness(&report, store_report.as_ref(), json, &cli.out),
         Command::Directive => cmd_directive(&report, json),
         Command::Propose => cmd_propose(&report, json),
         Command::Validate => cmd_validate(&report, json),
-        Command::Export => cmd_export(&report, &cli.out, json),
+        Command::Export => cmd_export(&report, store_report.as_ref(), &cli.out, json),
         Command::Daemon { interval, once } => {
             return cmd_daemon(&root, &config, *interval, *once, json);
         }
@@ -156,14 +165,24 @@ fn run() -> Result<(), String> {
     Ok(())
 }
 
-fn maybe_write_artifacts(report: &AnalysisReport, out: &Path) -> Result<Vec<PathBuf>, String> {
-    let markdown = render_markdown(
+fn maybe_write_artifacts(
+    report: &AnalysisReport,
+    store: Option<&edwardian_store::StoreReport>,
+    out: &Path,
+) -> Result<Vec<PathBuf>, String> {
+    let mut markdown = render_markdown(
         &report.readiness,
         &report.findings,
         &report.directives,
         &report.proposals,
     );
-    let values = report.artefact_values();
+    if let Some(store) = store {
+        markdown.push_str(&edwardian_store::render_markdown_section(store));
+    }
+    let mut values = report.artefact_values();
+    if let Some(store) = store {
+        values.push(("store-compliance.json", store.to_json()));
+    }
     let artifacts: Vec<(&'static str, &serde_json::Value)> =
         values.iter().map(|(n, v)| (*n, v)).collect();
     write_artifacts(out, &artifacts, &markdown).map_err(|e| format!("writing artefacts: {}", e))
@@ -198,8 +217,38 @@ fn cmd_inspect(report: &AnalysisReport, json: bool) -> Result<String, String> {
     ))
 }
 
-fn cmd_analyse(report: &AnalysisReport, json: bool, out: &Path) -> Result<String, String> {
-    let written = maybe_write_artifacts(report, out)?;
+fn store_summary_line(store: &edwardian_store::StoreReport) -> String {
+    use edwardian_store::StoreStatus;
+    format!(
+        "Microsoft Store compliance (advisory): {} of {} checks met ({} not met, {} unknown)",
+        store.count(StoreStatus::Met),
+        store.checks.len(),
+        store.count(StoreStatus::NotMet),
+        store.count(StoreStatus::Unknown)
+    )
+}
+
+fn cmd_store(store: &edwardian_store::StoreReport, json: bool) -> Result<String, String> {
+    if json {
+        return Ok(format!(
+            "{}\n",
+            serde_json::to_string_pretty(&store.to_json()).map_err(|e| e.to_string())?
+        ));
+    }
+    let mut s = format!("{}\n", store_summary_line(store));
+    for c in &store.checks {
+        s.push_str(&format!("  [{}] {} {}: {}\n", c.status.label(), c.id, c.name, c.detail));
+    }
+    Ok(s)
+}
+
+fn cmd_analyse(
+    report: &AnalysisReport,
+    store: Option<&edwardian_store::StoreReport>,
+    json: bool,
+    out: &Path,
+) -> Result<String, String> {
+    let written = maybe_write_artifacts(report, store, out)?;
     if json {
         return Ok(serde_json::to_string_pretty(&report.to_json()).map_err(|e| e.to_string())?);
     }
@@ -216,6 +265,9 @@ fn cmd_analyse(report: &AnalysisReport, json: bool, out: &Path) -> Result<String
     }
     if report.findings.is_empty() {
         s.push_str("  none\n");
+    }
+    if let Some(store) = store {
+        s.push_str(&format!("{}\n", store_summary_line(store)));
     }
     s.push_str(&format!(
         "\nArtefacts written under {}/\n",
@@ -312,12 +364,20 @@ fn cmd_alternatives(report: &AnalysisReport, json: bool) -> Result<String, Strin
     Ok(s)
 }
 
-fn cmd_readiness(report: &AnalysisReport, json: bool, out: &Path) -> Result<String, String> {
-    let written = maybe_write_artifacts(report, out)?;
+fn cmd_readiness(
+    report: &AnalysisReport,
+    store: Option<&edwardian_store::StoreReport>,
+    json: bool,
+    out: &Path,
+) -> Result<String, String> {
+    let written = maybe_write_artifacts(report, store, out)?;
     if json {
         return Ok(serde_json::to_string_pretty(&report.readiness_json()).map_err(|e| e.to_string())?);
     }
     let mut s = edwardian_engine::format_readiness_console(report);
+    if let Some(store) = store {
+        s.push_str(&format!("{}\n", store_summary_line(store)));
+    }
     if report.readiness.status != edwardian_core::ReadinessStatus::Ready {
         let blockers: Vec<_> = report
             .findings
@@ -422,8 +482,13 @@ fn cmd_validate(report: &AnalysisReport, json: bool) -> Result<String, String> {
     }
 }
 
-fn cmd_export(report: &AnalysisReport, out: &Path, json: bool) -> Result<String, String> {
-    let written = maybe_write_artifacts(report, out)?;
+fn cmd_export(
+    report: &AnalysisReport,
+    store: Option<&edwardian_store::StoreReport>,
+    out: &Path,
+    json: bool,
+) -> Result<String, String> {
+    let written = maybe_write_artifacts(report, store, out)?;
     if json {
         let files: Vec<_> = written
             .iter()

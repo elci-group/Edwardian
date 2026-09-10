@@ -9,6 +9,7 @@ edwardian-core.workspace = true
 edwardian-engine.workspace = true
 edwardian-daemon.workspace = true
 edwardian-release.workspace = true
+edwardian-store.workspace = true
 edwardian-resolver.workspace = true
 edwardian-directives.workspace = true
 edwardian-proposals.workspace = true

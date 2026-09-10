@@ -14,6 +14,7 @@ edwardian-platform.workspace = true
 edwardian-engine.workspace = true
 edwardian-daemon.workspace = true
 edwardian-release.workspace = true
+edwardian-store.workspace = true
 edwardian-report.workspace = true
 edwardian-elci.workspace = true
 clap.workspace = true

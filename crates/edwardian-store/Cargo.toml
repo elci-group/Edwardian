@@ -1,0 +1,15 @@
+[package]
+name = "edwardian-store"
+version = "0.1.3"
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+edwardian-core.workspace = true
+edwardian-engine.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+edwardian-test = { path = "../edwardian-test" }

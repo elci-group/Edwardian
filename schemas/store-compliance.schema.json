@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edwardian.dev/schemas/store-compliance.schema.json",
+  "title": "Edwardian Store Compliance (advisory)",
+  "type": "object",
+  "required": ["target", "advisory", "summary", "checks"],
+  "additionalProperties": false,
+  "properties": {
+    "target": {
+      "type": "string",
+      "enum": [
+        "linux", "windows", "mac-os", "free-bsd", "open-bsd",
+        "android", "ios", "wasm"
+      ]
+    },
+    "advisory": { "const": true },
+    "summary": {
+      "type": "object",
+      "required": ["total", "met", "not_met", "unknown"],
+      "additionalProperties": false,
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "met": { "type": "integer", "minimum": 0 },
+        "not_met": { "type": "integer", "minimum": 0 },
+        "unknown": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/check" }
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "required": ["id", "name", "status", "detail", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^MSC-[0-9]{3}$" },
+        "name": { "type": "string", "minLength": 1 },
+        "status": { "type": "string", "enum": ["met", "not-met", "unknown"] },
+        "detail": { "type": "string", "minLength": 1 },
+        "evidence": {
+          "type": ["object", "null"],
+          "required": ["id", "source", "location", "observation", "confidence", "detector"],
+          "properties": {
+            "id": { "type": "string" },
+            "source": { "type": "string" },
+            "location": {
+              "type": "object",
+              "required": ["path", "line", "column"],
+              "properties": {
+                "path": { "type": "string" },
+                "line": { "type": "integer", "minimum": 1 },
+                "column": { "type": "integer", "minimum": 1 }
+              }
+            },
+            "observation": { "type": "string" },
+            "confidence": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+            "detector": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
