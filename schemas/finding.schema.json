@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edwardian.dev/schemas/finding.schema.json",
+  "title": "Edwardian Finding",
+  "type": "object",
+  "required": ["id", "evidence", "dependency", "state", "severity", "description", "remediation_hint"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^FND-[0-9]{5}$",
+      "description": "Deterministic finding id, counted from 1 within a run"
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/evidence" }
+    },
+    "dependency": {
+      "type": "string",
+      "enum": [
+        "none", "configuration", "tooling", "build-system", "runtime",
+        "filesystem", "process", "shell", "service", "ipc", "kernel",
+        "native-library", "abi", "compiler", "package-manager", "container",
+        "ci", "deployment", "architecture", "unknown"
+      ]
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "portable", "windows-compatible", "configurable", "adaptable",
+        "replaceable", "requires-implementation", "architecturally-incompatible",
+        "unknown"
+      ]
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["info", "minor", "major", "blocker"]
+    },
+    "description": { "type": "string", "minLength": 1 },
+    "remediation_hint": { "type": ["string", "null"] }
+  },
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "required": ["id", "source", "location", "observation", "confidence", "detector"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^EWD-[0-9]{5}$"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["file-scan", "manifest", "repo-layout", "heuristic"]
+        },
+        "location": {
+          "type": "object",
+          "required": ["path", "line", "column"],
+          "additionalProperties": false,
+          "properties": {
+            "path": { "type": "string", "minLength": 1 },
+            "line": { "type": "integer", "minimum": 1 },
+            "column": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "observation": { "type": "string", "minLength": 1 },
+        "confidence": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+        "detector": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

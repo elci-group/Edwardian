@@ -1,0 +1,21 @@
+[package]
+name = "edwardian-daemon"
+version = "0.1.1"
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+edwardian-core.workspace = true
+edwardian-evidence.workspace = true
+edwardian-detectors.workspace = true
+edwardian-resolver.workspace = true
+edwardian-directives.workspace = true
+edwardian-proposals.workspace = true
+edwardian-report.workspace = true
+edwardian-engine.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+edwardian-test = { path = "../edwardian-test" }

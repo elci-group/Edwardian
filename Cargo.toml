@@ -1,0 +1,43 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/edwardian-core",
+    "crates/edwardian-evidence",
+    "crates/edwardian-platform",
+    "crates/edwardian-detectors",
+    "crates/edwardian-resolver",
+    "crates/edwardian-directives",
+    "crates/edwardian-proposals",
+    "crates/edwardian-padagonia",
+    "crates/edwardian-elci",
+    "crates/edwardian-report",
+    "crates/edwardian-engine",
+    "crates/edwardian-cli",
+    "crates/edwardian-daemon",
+    "crates/edwardian-release",
+    "crates/edwardian-test",
+]
+
+[workspace.package]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+clap = { version = "4", features = ["derive"] }
+tempfile = "3"
+
+edwardian-core = { path = "crates/edwardian-core" }
+edwardian-evidence = { path = "crates/edwardian-evidence" }
+edwardian-platform = { path = "crates/edwardian-platform" }
+edwardian-detectors = { path = "crates/edwardian-detectors" }
+edwardian-resolver = { path = "crates/edwardian-resolver" }
+edwardian-directives = { path = "crates/edwardian-directives" }
+edwardian-proposals = { path = "crates/edwardian-proposals" }
+edwardian-padagonia = { path = "crates/edwardian-padagonia" }
+edwardian-elci = { path = "crates/edwardian-elci" }
+edwardian-report = { path = "crates/edwardian-report" }
+edwardian-engine = { path = "crates/edwardian-engine" }
+edwardian-daemon = { path = "crates/edwardian-daemon" }
+edwardian-release = { path = "crates/edwardian-release" }

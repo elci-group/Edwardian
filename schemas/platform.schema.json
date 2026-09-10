@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edwardian.dev/schemas/platform.schema.json",
+  "title": "Edwardian Platform Profile",
+  "type": "object",
+  "required": [
+    "platform", "shell", "default_shell", "path_separator",
+    "supports_unix_sockets", "supports_posix_signals", "service_manager",
+    "fs_watch_api", "package_managers", "native_abi"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "platform": {
+      "type": "string",
+      "enum": [
+        "linux", "windows", "mac-os", "free-bsd", "open-bsd",
+        "android", "ios", "wasm"
+      ]
+    },
+    "shell": { "type": ["string", "null"] },
+    "default_shell": { "type": ["string", "null"] },
+    "path_separator": { "type": "string", "minLength": 1, "maxLength": 1 },
+    "supports_unix_sockets": { "type": "boolean" },
+    "supports_posix_signals": { "type": "boolean" },
+    "service_manager": { "type": ["string", "null"] },
+    "fs_watch_api": { "type": ["string", "null"] },
+    "package_managers": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "native_abi": { "type": "string", "minLength": 1 }
+  }
+}

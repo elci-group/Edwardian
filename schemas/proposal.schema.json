@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://edwardian.dev/schemas/proposal.schema.json",
+  "title": "Edwardian Proposal",
+  "type": "object",
+  "required": [
+    "id", "capability", "current_impl", "required_impl",
+    "recommended_architecture", "required_interface",
+    "compatibility_invariant", "estimated_effort_days", "risk", "state"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^EWP-[0-9]{3}$"
+    },
+    "capability": { "type": "string", "minLength": 1 },
+    "current_impl": { "type": "string", "minLength": 1 },
+    "required_impl": { "type": "string", "minLength": 1 },
+    "recommended_architecture": { "type": "string", "minLength": 1 },
+    "required_interface": { "type": "string", "minLength": 1 },
+    "compatibility_invariant": { "type": "string", "minLength": 1 },
+    "estimated_effort_days": { "type": "integer", "minimum": 1 },
+    "risk": { "type": "string", "minLength": 1 },
+    "state": {
+      "type": "string",
+      "enum": ["analysed", "recommended", "implemented", "compiles", "tested", "validated"]
+    }
+  }
+}
