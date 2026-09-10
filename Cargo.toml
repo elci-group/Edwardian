@@ -15,6 +15,7 @@ members = [
     "crates/edwardian-cli",
     "crates/edwardian-daemon",
     "crates/edwardian-release",
+    "crates/edwardian-store",
     "crates/edwardian-test",
 ]
 
@@ -41,3 +42,4 @@ edwardian-report = { path = "crates/edwardian-report" }
 edwardian-engine = { path = "crates/edwardian-engine" }
 edwardian-daemon = { path = "crates/edwardian-daemon" }
 edwardian-release = { path = "crates/edwardian-release" }
+edwardian-store = { path = "crates/edwardian-store" }
