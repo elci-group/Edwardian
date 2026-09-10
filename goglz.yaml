@@ -1,0 +1,37 @@
+# Goglz Revision Configuration for Edwardian
+purpose: "Produce accurate, comprehensive technical documentation for Edwardian — a platform-portability intelligence tool that assesses Linux-first repositories for Windows readiness"
+scope: "All documentation files in docs/, README.md, and crate-level documentation. Coverage must reflect the actual 10-stage pipeline, 16-crate workspace, 8 platform targets, and CLI command surface as implemented in the codebase."
+
+writing_style:
+  tone: "Professional, precise, and approachable"
+  voice: "Active and direct"
+  audience: "Rust developers, platform engineers, and repository maintainers evaluating cross-platform readiness"
+  guidelines:
+    - "Use active voice and concrete verbs"
+    - "State behaviour as observed in the codebase, not speculation"
+    - "Include code examples with syntax highlighting for CLI and API usage"
+    - "Define domain terms (finding, evidence, directive, proposal, readiness) on first use"
+    - "Keep paragraphs focused; prefer short sections over long walls of text"
+    - "Maintain consistent terminology and identifier casing across all documents"
+
+formatting_rules:
+  headings: true
+  bullet_points: true
+  numbered_lists: true
+  code_blocks: true
+  max_line_length: 100
+  custom_rules:
+    - "Use Markdown with ATX headings (#, ##, ###)"
+    - "Include fenced code blocks with language tags (rust, bash, json)"
+    - "Separate sections with a blank line"
+    - "Use tables for capability and dimension mappings"
+    - "Link between documents with relative paths"
+
+global_assets: []
+local_assets: []
+
+languages:
+  - code: "en"
+    name: "English"
+    enabled: true
+    output_pattern: "{filename}.{ext}"
